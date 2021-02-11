@@ -11,7 +11,7 @@ library(ROCR)
  
 '
 
-credit_data <- read_csv('C:/Users/ltfou/Desktop/MSBA/MSBA 635 - Data Analytics II/R/Credit_default.csv') 
+credit_data <- read_csv('Credit_default.csv') 
 
 credit_data <- rename(credit_data, DEFAULT = default.payment.next.month)
 
