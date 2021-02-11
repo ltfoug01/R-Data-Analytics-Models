@@ -1,6 +1,6 @@
 library(caret)
 
-credit_data <- read.csv('C:/Users/ltfou/Desktop/MSBA/MSBA 635 - Data Analytics II/R/Credit_default.csv',
+credit_data <- read.csv('Credit_default.csv',
                         header = T)
 
 ##Preprocessing----------------------------------------------------------------
