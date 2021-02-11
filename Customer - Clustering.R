@@ -7,7 +7,7 @@
 library(caret)
 
 ##Summary Data-----------------------------------------------------------------
-seg.df <- read.csv('customer_data.csv')
+seg.df <- read.csv('Customer_data.csv')
 
 head(seg.df)
 
