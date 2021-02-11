@@ -5,8 +5,8 @@ library(tidyverse)
 ##Partition the data-----------------------------------------------------------
 set.seed(98)
 
-flight_train <- read_csv("C:/Users/ltfou/Desktop/MSBA/MSBA 635 - Data Analytics II/R/flights_train.csv")    #train set
-flight_test <- read_csv("C:/Users/ltfou/Desktop/MSBA/MSBA 635 - Data Analytics II/R/flights_test.csv")    #test set
+flight_train <- read_csv("Flights_train.csv")    #train set
+flight_test <- read_csv("Flights_test.csv")    #test set
 
 
 ##Fit the Model----------------------------------------------------------------
