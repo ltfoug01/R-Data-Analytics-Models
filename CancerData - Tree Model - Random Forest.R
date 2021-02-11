@@ -5,7 +5,7 @@
 library(caret)            #Classification And REgression Trainin - ?caret
 library(tidyverse)
 
-cancer_data <- read_csv("C:/Users/ltfou/Desktop/MSBA/MSBA 635 - Data Analytics II/R/cancer_data.csv")
+cancer_data <- read_csv("Cancer_data.csv")
 
 view(cancer_data)
 
