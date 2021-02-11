@@ -13,7 +13,7 @@ library(ROCR)
  Know how to use Cp plot/table to prune a large tree.
 '
 
-churn_data <- read_csv("C:/Users/ltfou/Desktop/MSBA/MSBA 635 - Data Analytics II/R/churn_dataset.csv")
+churn_data <- read_csv("Churn_dataset.csv")
 
 head(churn_data)
 str(churn_data)
