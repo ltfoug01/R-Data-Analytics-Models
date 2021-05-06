@@ -75,8 +75,8 @@ pred <- prediction(pred_glm0_test, credit_test$DEFAULT)
 
 perf <- performance(pred, 'tpr', 'fpr')
 
-plot(perf, colorize = TRUE)
+plot(perf, colorize = TRUE)                               #ROC curve
 
-unlist(slot(performance(pred, 'auc'), 'y.values'))
+unlist(slot(performance(pred, 'auc'), 'y.values'))        #AUC
 
 
