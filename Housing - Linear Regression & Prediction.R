@@ -1,4 +1,7 @@
 library(tidyverse)
+library(corrplot)
+library(ggplot2)
+library(stargazer)
 '
 How to perform linear regression and other plotting methods in R.
 Based on historical Boston housing data.
@@ -22,7 +25,7 @@ boxplot(housing)         #boxplots all predictor variables
 
 boxplot(housing[,1:3])   #boxplot(dataframe[row,column])
 
-boxplot(housing[,c(6,8,9)])
+boxplot(housing[,c(1,2,4,6,7,8,9,11,12,13)])
 
 boxplot(housing$medv~housing$chas, ylab = 'Median house price',
         xlab = 'Near the river (N/Y)')   #plot by group
@@ -31,7 +34,20 @@ boxplot(housing$medv~housing$chas, ylab = 'Median house price',
 ## SCATTER PLOT MATRIX-------------------------------------------------
 pairs(housing)                #all variables
 
-pairs(housing[,c(1,6,13)])
+pairs(housing[,c(1,6,13)])    #specified vars
+
+#check correlation between variables
+corrplot(cor(housing), method = "number", type = "upper", diag = FALSE)
+
+#scatter plot
+housing %>%
+  gather(key, val, -medv) %>%
+  ggplot(aes(x = val, y = medv)) +
+  geom_point() +
+  stat_smooth(method = "lm", se = TRUE, col = "blue") +
+  facet_wrap(~key, scales = "free") +
+  theme_gray() +
+  ggtitle("Scatter Plot of Dependent Variables vs Median Value (medv)") 
 
 
 ## Data Partitioning---------------------------------------------------
@@ -47,13 +63,12 @@ Housing_test <- housing[-sample_index,]
 
 
 model_1 <- lm(medv~crim+zn+chas+nox+rm+dis+rad+tax+
-                ptratio+lstat, data = Housing_train) #includes all vars
+                ptratio+lstat+age, data = Housing_train) #includes all vars
 
-#model_1 <- lm(medv~., data=Boston_train) also includes all vars
+model_1 <- lm(medv~., data=Housing_train) #also includes all vars
 
 summary(model_1) #returns coefficients & other stats
-
-
+stargazer(model_1, type = 'text')
 
 ## Model Assessment----------------------------------------------------
 '
@@ -71,5 +86,3 @@ pi <- predict(object = model_1, Housing_test) #or predict(model_1 ,Housing_test)
 mean((pi - Housing_test$medv)^2)
 
 predict(model_1)
-
-
