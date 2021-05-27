@@ -1,0 +1,137 @@
+---
+title: "Boston Housing - Regression Decision Tree"
+author: "Luke Fougerousse"
+date: "5/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(caret)                      #Classification And REgression Trainin - ?caret
+library(tidyverse)
+library(rpart)
+library(rpart.plot)
+library(ggplot2)
+```
+
+## **Regression Decision Tree - Boston Housing Data**
+This report covers the model building process of a regression decision tree model. The main package it uses to perform its functions in the **rpart** package. It will use a data set based on Boston Housing and the response variable being used is the median house value (**medv**) 
+
+This report provides an analysis and evaluation of the factors affecting the median value of the owner occupied homes in the suburbs of Boston. The factors that have been recorded include:
+
+* CRIM - per capita crime rate by town
+* ZN - proportion of residential land zoned for lots over 25,000 sq.ft.
+* INDUS - proportion of non-retail business acres per town.
+* CHAS - Charles River dummy variable (1 if tract bounds river; 0 otherwise)
+* NOX - nitric oxides concentration (parts per 10 million)
+* RM - average number of rooms per dwelling
+* AGE - proportion of owner-occupied units built prior to 1940
+* DIS - weighted distances to five Boston employment centres
+* RAD - index of accessibility to radial highways
+* TAX - full-value property-tax rate per $10,000
+* PTRATIO - pupil-teacher ratio by town
+* LSTAT - % lower status of the population
+* MEDV - Median value of owner-occupied homes in $1000's highways, next to Charles River or not, etc.
+
+#### **STEP ONE: Load and Explore the Data**
+```{r message=FALSE, warning=FALSE}
+Housing <- read.csv('Housing(1).csv')
+head(Housing)
+summary(Housing) #summary stats
+sum(is.na(Housing)) #check for any missing values
+
+#Scatter Plot Matrix
+Housing %>%
+  gather(key, val, -medv) %>%
+  ggplot(aes(x = val, y = medv)) +                        #x-axis is value & y-axis is medv
+  geom_point() +                                          #scatter plot                   
+  stat_smooth(method = "lm", se = TRUE, col = "red") +    #plot the linear regression line
+  facet_wrap(~key, scales = "free") +                     #plot the explanatory variables
+  theme_gray() +
+  ggtitle("Scatter plot of dependent variables vs Median Value (medv)")
+
+#See number of home located to the Chas River
+table(Housing$chas) 
+  
+#Distributions
+Housing %>%
+  gather(key, val) %>%
+  ggplot(aes(x = val)) +                #plot x as values for each variable
+  geom_histogram (fill = 'red') +       #histogram                  
+  facet_wrap(~key, scales = "free") +   #show all variables
+  theme_gray() + 
+  ggtitle("Variable Distribution")
+```
+
+Key Takeaways:
+
+* No missing values in the data set.
+* There is a strong positive correlation between the number of rooms (**rm**) and the median value of owner-occupied homes($1000)(**medv**). As the number of rooms increases so does the median value.
+* There is a strong negative correlation between the % lower status of the population (**lstat**) and the median value (**medv**). As the the lower status of the population increases the median value of the home decreases.
+* 471 of the homes in the data set are not near the river vs. 35 that are.
+* The weighted distances to the 5 Boston employment centres (**dis**) is heavily skewed to the right; the majority of homes can be found within 5 miles of an employment center.
+* The proportion of owner-occupied units built prior to 1940 (**age**) is skewed to the left;a high proportion of owner occupied homes built prior to 1940.
+
+
+#### **STEP TWO: Partition the Data**
+```{r warning=FALSE, message=FALSE}
+set.seed(9)
+sample_index <- sample(nrow(Housing), nrow(Housing)*0.90) #split data
+housing_train <- Housing[sample_index,]                   #train set
+housing_test <- Housing[-sample_index,]                   #test set
+```
+
+#### **STEP THREE: Train Regression Tree on the Training Data**
+The rpart library uses a formula argument in which you specify the response and predictor variables, and a data argument in which you specify the data frame.
+
+```{r warning=FALSE, message=FALSE}
+housing_rpart <- rpart(formula = medv ~ .,   #response & all predictor variables
+                       data = housing_train) #train data
+```
+
+#### **STEP FOUR: Print and Plot the Tree**
+```{r warning=FALSE, message=FALSE}
+#print to console
+housing_rpart 
+
+#print using prp function
+prp(housing_rpart, digits = 4, extra = 1)
+```
+
+Using the decision tree above we can determine the median value of an owner occupied home in the Boston area. For example, if a home had the following predictor variables: rm = 6.2, lstat = 5.23, and dis = 2.76 the predicted median value of the home would be 22.75($1000).
+
+#### **STEP FIVE: Pruning to Avoid Overfitting**
+In rpart(), the cp(complexity parameter) argument is one of the parameters that are used to control the complexity of the tree. The help document for rpart tells you “Any split that does not decrease the overall lack of fit by a factor of cp is not attempted”. For a regression tree, the overall R-square must increase by cp at each step. Basically, the smaller the cp value, the larger (complex) tree rpart will attempt to fit. The default value for cp is 0.01.
+
+The following tree has 27 splits:
+```{r warning=FALSE, message=FALSE}
+housing_largetree <- rpart(formula = medv ~ ., data = housing_train, cp = 0.001)
+prp(housing_largetree)
+
+#Relationship between 10-fold cross-validation error in the training set and size of tree.
+plotcp(housing_largetree)
+```
+
+The above graph that the cross-validation error (x-val) does not always go down when the tree becomes more complex. The analogy is when you add more variables in a regression model, its ability to predict future observations does not necessarily increase. A good choice of cp for pruning is often the leftmost value for which the mean lies below the horizontal line. This horizontal line is 1SE above the minimum error, thus where we want the smallest tree below this line.
+
+To get the best tree, we use the cp value that is the leftmost value for which the mean lies below the horizontal line. That is cp=0.008.
+
+```{r warning=FALSE, message=FALSE}
+#prune the tree w/ cp of 0.008
+prune_tree <- prune(housing_largetree, cp = 0.008)
+
+#plot the pruned tree
+prp(prune_tree, digits = 4, extra = 1)
+```
+
+#### **STEP SIX: Get Predictions Using Testing Set Data & Pruned Tree**
+```{r warning=FALSE, message=FALSE}
+housing_prediction = predict(prune_tree, housing_test)
+```
+
+#### **STEP SEVEN: Evaluate Model Performance (ASE)**
+Determine the Average Squared Error (ASE), which is the average of the squared differences between the predicted values and the actual values.
+```{r warning=FALSE, message=FALSE}
+ASE.tree <- mean((housing_prediction - housing_test$medv)^2)
+ASE.tree
+```
