@@ -5,7 +5,6 @@ library(stargazer)
 '
 How to perform linear regression and other plotting methods in R.
 Based on historical Boston housing data.
-
 '
 
 housing <- read_csv("C:/Users/ltfou/Desktop/MSBA/MSBA 635 - Data Analytics II/R/Housing(1).csv")
@@ -70,6 +69,10 @@ model_1 <- lm(medv~., data=Housing_train) #also includes all vars
 summary(model_1) #returns coefficients & other stats
 stargazer(model_1, type = 'text')
 
+#new model with indus and age removed becasue of insignificance
+model_2 <- lm(medv ~ . -indus -age, data = Housing_train)
+summary(model_2)
+
 ## Model Assessment----------------------------------------------------
 '
  Model Evaluation on the test data (also known as out of sample error).
@@ -79,10 +82,14 @@ stargazer(model_1, type = 'text')
 
 #pi is a vector that contains predicted values for test set.
 pi <- predict(object = model_1, Housing_test) #or predict(model_1 ,Housing_test)
+pi2 <- predict(object = model_2, Housing_test)
 
 #Average Squared Error (ASE) also known as 
 #Mean squared eeror(MSE): average of the squared differences 
 #between the predicted and actual values
 mean((pi - Housing_test$medv)^2)
+mean((pi2 - Housing_test$medv)^2)
 
 predict(model_1)
+predict((model_2))
+
