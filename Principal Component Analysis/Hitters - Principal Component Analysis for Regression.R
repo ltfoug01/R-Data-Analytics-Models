@@ -21,7 +21,7 @@ library(tidyverse)
 
 Hitters_data <- read.csv("Hitters.csv", header = T)
 
-Hitters_data
+names(Hitters_data)
 
 
 ##Partition the Data-----------------------------------------------------------
@@ -49,7 +49,7 @@ library(pls)
  character.
 '
 
-# define a grid of parameter options to try
+# define a grid of parameter options to try - 19 variables
 pcr_grid <- expand.grid(ncomp = 1:(ncol(Hitters_train)-1))
 
 pcr_grid
@@ -59,11 +59,11 @@ model_pcr <- train(Salary ~ .,
                    method = "pcr",                     #principal comp. regression
                    preProcess = c("center", "scale"),  #center and scale variables 
                    trControl = fit_control,            #set up cross-validation
-                   tuneGrid = pcr_grid)                #provide a grid of number of Principal comps to try
+                   tuneGrid = pcr_grid)                #provide a grid of number of Principal components to try
 
 model_pcr
 
-summary(model_pcr)  #Summarize the final model
+summary(model_pcr)     #Summarize the final model - show principal components
 
 plot(model_pcr)
 
@@ -80,3 +80,4 @@ head(Hitters)
 ASE <- mean((Hitters- Hitters_test$Salary) ^2) #ASE
 
 ASE
+
